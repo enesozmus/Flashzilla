@@ -57,10 +57,10 @@
 			children = (
 				DFFD47F02BC553E600FBADBD /* FlashzillaApp.swift */,
 				DFFD47F22BC553E600FBADBD /* ContentView.swift */,
+				DFFD48002BC554F800FBADBD /* CardView.swift */,
 				DFFD47FE2BC5540100FBADBD /* Card.swift */,
 				DFFD47F42BC553E700FBADBD /* Assets.xcassets */,
 				DFFD47F62BC553E700FBADBD /* Preview Content */,
-				DFFD48002BC554F800FBADBD /* CardView.swift */,
 			);
 			path = Flashzilla;
 			sourceTree = "<group>";
