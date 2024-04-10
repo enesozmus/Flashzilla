@@ -53,6 +53,16 @@ struct ContentView: View {
                         .stacked(at: index, in: cards.count)
                     }
                 }
+                // → SwiftUI lets us disable interactivity for a view by setting allowsHitTesting() to false, so in our project we can use it to disable swiping on any card when the time runs out by checking the value of timeRemaining.
+                .allowsHitTesting(timeRemaining > 0)
+                
+                if cards.isEmpty {
+                    Button("Start Again", action: resetCards)
+                        .padding()
+                        .background(.white)
+                        .foregroundStyle(.black)
+                        .clipShape(.capsule)
+                }
             }
             
             if accessibilityDifferentiateWithoutColor {
@@ -83,9 +93,11 @@ struct ContentView: View {
                 timeRemaining -= 1
             }
         }
-        .onChange(of: scenePhase) {
-            if scenePhase == .active {
-                isActive = true
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
+                if cards.isEmpty == false {
+                    isActive = true
+                }
             } else {
                 isActive = false
             }
@@ -95,6 +107,15 @@ struct ContentView: View {
     // ...
     func removeCard(at index: Int) {
         cards.remove(at: index)
+        
+        if cards.isEmpty {
+            isActive = false
+        }
+    }
+    func resetCards() {
+        cards = Array<Card>(repeating: .example, count: 10)
+        timeRemaining = 100
+        isActive = true
     }
 }
 
