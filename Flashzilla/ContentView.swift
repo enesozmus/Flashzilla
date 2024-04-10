@@ -21,6 +21,7 @@ struct ContentView: View {
     // → Now that we’ve designed one card and its associated card view, the next step is to build a stack of those cards to represent the things our user is trying to learn.
     // → This stack will change as the app is used because the user will be able to remove cards, so we need to mark it with @State.
     @State private var cards = Array<Card>(repeating: .example, count: 10)
+    @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
     
     var body: some View {
         // → Around that VStack will be another ZStack, so we can place our cards and timer on top of a background.
@@ -40,6 +41,27 @@ struct ContentView: View {
                         }
                         .stacked(at: index, in: cards.count)
                     }
+                }
+            }
+            
+            if accessibilityDifferentiateWithoutColor {
+                VStack {
+                    Spacer()
+                    
+                    HStack {
+                        Image(systemName: "xmark.circle")
+                            .padding()
+                            .background(.black.opacity(0.7))
+                            .clipShape(.circle)
+                        Spacer()
+                        Image(systemName: "checkmark.circle")
+                            .padding()
+                            .background(.black.opacity(0.7))
+                            .clipShape(.circle)
+                    }
+                    .foregroundStyle(.white)
+                    .font(.largeTitle)
+                    .padding()
                 }
             }
         }
