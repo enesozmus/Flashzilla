@@ -22,6 +22,10 @@ struct ContentView: View {
     // → This stack will change as the app is used because the user will be able to remove cards, so we need to mark it with @State.
     @State private var cards = Array<Card>(repeating: .example, count: 10)
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
+    @State private var timeRemaining = 100
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    @Environment(\.scenePhase) var scenePhase
+    @State private var isActive = true
     
     var body: some View {
         // → Around that VStack will be another ZStack, so we can place our cards and timer on top of a background.
@@ -31,6 +35,13 @@ struct ContentView: View {
                 .ignoresSafeArea()
             // → Around that ZStack will be a VStack. Right now that VStack won’t do much, but later on it will allow us to place a timer above our cards.
             VStack {
+                Text("Time: \(timeRemaining)")
+                    .font(.largeTitle)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 5)
+                    .background(.black.opacity(0.75))
+                    .clipShape(.capsule)
                 // → Our stack of cards will be placed inside a ZStack so we can make them partially overlap with a neat 3D effect.
                 ZStack {
                     ForEach(0..<cards.count, id: \.self) { index in
@@ -63,6 +74,20 @@ struct ContentView: View {
                     .font(.largeTitle)
                     .padding()
                 }
+            }
+        }
+        .onReceive(timer) { time in
+            guard isActive else { return }
+            
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            }
+        }
+        .onChange(of: scenePhase) {
+            if scenePhase == .active {
+                isActive = true
+            } else {
+                isActive = false
             }
         }
     }
