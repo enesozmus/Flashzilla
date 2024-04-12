@@ -21,7 +21,8 @@ struct ContentView: View {
     // → Now that we’ve designed one card and its associated card view, the next step is to build a stack of those cards to represent the things our user is trying to learn.
     // → This stack will change as the app is used because the user will be able to remove cards, so we need to mark it with @State.
     //@State private var cards = Array<Card>(repeating: .example, count: 10)
-    @State private var cards = [Card]()
+    //@State private var cards = [Card]()
+    @State private var cards = DataManager.load()
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
     @State private var timeRemaining = 100
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -39,8 +40,10 @@ struct ContentView: View {
         ZStack {
             // → Our UI is a bit of a mess when used with VoiceOver.
             // → Make small swipes to the right and VoiceOver will move through all the accessibility elements – it reads out the text from all our cards, even the ones that aren’t visible.
-            Image(decorative: "background")
-                .resizable()
+            //            Image(decorative: "background")
+            //                .resizable()
+            //                .ignoresSafeArea()
+            Color(.yellow)
                 .ignoresSafeArea()
             // → Around that ZStack will be a VStack. Right now that VStack won’t do much, but later on it will allow us to place a timer above our cards.
             VStack {
@@ -176,16 +179,17 @@ struct ContentView: View {
     func resetCards() {
         timeRemaining = 100
         isActive = true
-        loadData()
+        //loadData()
+        cards = DataManager.load()
     }
     
-    func loadData() {
-        if let data = UserDefaults.standard.data(forKey: "Cards") {
-            if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
-                cards = decoded
-            }
-        }
-    }
+    //    func loadData() {
+    //        if let data = UserDefaults.standard.data(forKey: "Cards") {
+    //            if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
+    //                cards = decoded
+    //            }
+    //        }
+    //    }
     
     func sendCardBack(at index: Int) {
         let card = Card(prompt: cards[index].prompt, answer: cards[index].answer)
