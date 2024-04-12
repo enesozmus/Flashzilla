@@ -19,6 +19,7 @@ struct CardView: View {
     @State private var offset = CGSize.zero
     // → As you can see, that’s a closure that accepts no parameters and sends nothing back, defaulting to nil so we don’t need to provide it unless it’s explicitly needed.
     var removal: (() -> Void)? = nil
+    var sendedBack: (() -> Void)? = nil
     
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
     @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
@@ -81,9 +82,11 @@ struct CardView: View {
                 .onEnded { _ in
                     isDragged = false
                     if abs(offset.width) > 100 {
-                        // remove the card
-                        // → That question mark in there means the closure will only be called if it has been set.
-                        removal?()
+                        if offset.width > 0 {
+                            removal?()
+                        } else if offset.width < 0 {
+                            sendedBack?()
+                        }
                     } else {
                         offset = .zero
                     }

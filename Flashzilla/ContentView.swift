@@ -53,17 +53,21 @@ struct ContentView: View {
                     .clipShape(.capsule)
                 // → Our stack of cards will be placed inside a ZStack so we can make them partially overlap with a neat 3D effect.
                 ZStack {
-                    ForEach(0..<cards.count, id: \.self) { index in
-                        CardView(card: cards[index]) {
-                            withAnimation {
+                    ForEach(cards) { card in
+                        if let index = cards.firstIndex(where: { $0.id == card.id }) {
+                            CardView(card: card, removal: {
                                 removeCard(at: index)
-                            }
+                            }, sendedBack: {
+                                sendCardBack(at: index)
+                            })
+                            .stacked(at: index, in: cards.count)
+                            // → So that only the last card – the one on top – can be dragged around.
+                            
+                            .allowsHitTesting(index == cards.count - 1)
+                            // → In this case, every card that’s at an index less than the top card should be hidden from the accessibility system because there’s really nothing useful it can do with the card.
+                            .accessibilityHidden(index < cards.count - 1)
+                            
                         }
-                        .stacked(at: index, in: cards.count)
-                        // → So that only the last card – the one on top – can be dragged around.
-                        .allowsHitTesting(index == cards.count - 1)
-                        // → In this case, every card that’s at an index less than the top card should be hidden from the accessibility system because there’s really nothing useful it can do with the card.
-                        .accessibilityHidden(index < cards.count - 1)
                     }
                 }
                 // → SwiftUI lets us disable interactivity for a view by setting allowsHitTesting() to false, so in our project we can use it to disable swiping on any card when the time runs out by checking the value of timeRemaining.
@@ -105,7 +109,8 @@ struct ContentView: View {
                     HStack {
                         Button {
                             withAnimation {
-                                removeCard(at: cards.count - 1)
+                                //removeCard(at: cards.count - 1)
+                                sendCardBack(at: cards.count - 1)
                             }
                         } label: {
                             Image(systemName: "xmark.circle")
@@ -180,6 +185,12 @@ struct ContentView: View {
                 cards = decoded
             }
         }
+    }
+    
+    func sendCardBack(at index: Int) {
+        let card = Card(prompt: cards[index].prompt, answer: cards[index].answer)
+        cards.remove(at: index)
+        cards.insert(card, at: 0)
     }
 }
 
