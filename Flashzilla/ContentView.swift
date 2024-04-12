@@ -20,7 +20,8 @@ extension View {
 struct ContentView: View {
     // → Now that we’ve designed one card and its associated card view, the next step is to build a stack of those cards to represent the things our user is trying to learn.
     // → This stack will change as the app is used because the user will be able to remove cards, so we need to mark it with @State.
-    @State private var cards = Array<Card>(repeating: .example, count: 10)
+    //@State private var cards = Array<Card>(repeating: .example, count: 10)
+    @State private var cards = [Card]()
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
     @State private var timeRemaining = 100
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -29,6 +30,10 @@ struct ContentView: View {
     
     @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
     
+    // → We need some state that controls whether our editing screen is visible.
+    @State private var showingEditScreen = false
+    
+    // ...
     var body: some View {
         // → Around that VStack will be another ZStack, so we can place our cards and timer on top of a background.
         ZStack {
@@ -73,7 +78,27 @@ struct ContentView: View {
                 }
             }
             
-            if accessibilityDifferentiateWithoutColor || accessibilityVoiceOverEnabled {    
+            VStack {
+                HStack {
+                    Spacer()
+                    
+                    Button {
+                        showingEditScreen = true
+                    } label: {
+                        Image(systemName: "plus.circle")
+                            .padding()
+                            .background(.black.opacity(0.7))
+                            .clipShape(.circle)
+                    }
+                }
+                
+                Spacer()
+            }
+            .foregroundStyle(.white)
+            .font(.largeTitle)
+            .padding()
+            
+            if accessibilityDifferentiateWithoutColor || accessibilityVoiceOverEnabled {
                 VStack {
                     Spacer()
                     
@@ -128,6 +153,8 @@ struct ContentView: View {
                 isActive = false
             }
         }
+        .sheet(isPresented: $showingEditScreen, onDismiss: resetCards, content: EditCards.init)
+        .onAppear(perform: resetCards)
     }
     
     // ...
@@ -142,11 +169,18 @@ struct ContentView: View {
     }
     
     func resetCards() {
-        cards = Array<Card>(repeating: .example, count: 10)
         timeRemaining = 100
         isActive = true
+        loadData()
     }
     
+    func loadData() {
+        if let data = UserDefaults.standard.data(forKey: "Cards") {
+            if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
+                cards = decoded
+            }
+        }
+    }
 }
 
 #Preview {

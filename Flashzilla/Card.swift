@@ -12,9 +12,9 @@ import Foundation
 
 // → A sensible place to start for most projects is to define the data model we want to work with: what does one card of information look like?
 // → If you wanted to take this app further you could store some interesting statistics such as number of times shown and number of times correct, but here we’re only going to store a string for the prompt and a string for the answer.
-struct Card {
+struct Card: Codable {
     var prompt: String
     var answer: String
-
+    
     static let example = Card(prompt: "Who played the 13th Doctor in Doctor Who?", answer: "Jodie Whittaker")
 }
