@@ -11,8 +11,11 @@ import SwiftUI
 // → In this case we’re going to create a new stacked() modifier that takes a position in an array along with the total size of the array, and offsets a view by some amount based on those values.
 // → This will allow us to create an attractive card stack where each card is a little further down the screen than the ones before it.
 extension View {
+    // → total: total card count
+    // → position: position in the stack
     func stacked(at position: Int, in total: Int) -> some View {
         let offset = Double(total - position)
+        //  → 10 points down per card in the stack
         return self.offset(y: offset * 10)
     }
 }
@@ -25,6 +28,8 @@ struct ContentView: View {
     @State private var cards = DataManager.load()
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
     @State private var timeRemaining = 100
+    
+    // → a timer that fires every second
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     @Environment(\.scenePhase) var scenePhase
     @State private var isActive = true
@@ -65,7 +70,7 @@ struct ContentView: View {
                             })
                             .stacked(at: index, in: cards.count)
                             // → So that only the last card – the one on top – can be dragged around.
-                            
+                            // → only allow the top most card to be dragged
                             .allowsHitTesting(index == cards.count - 1)
                             // → In this case, every card that’s at an index less than the top card should be hidden from the accessibility system because there’s really nothing useful it can do with the card.
                             .accessibilityHidden(index < cards.count - 1)
@@ -146,6 +151,7 @@ struct ContentView: View {
             }
         }
         .onReceive(timer) { time in
+            // → making sure the timer pauses when the app goes into background
             guard isActive else { return }
             
             if timeRemaining > 0 {
@@ -154,6 +160,7 @@ struct ContentView: View {
         }
         .onChange(of: scenePhase) {
             if scenePhase == .active {
+                // → make sure the timer does not restart when coming back from background when cards are empty
                 if cards.isEmpty == false {
                     isActive = true
                 }
@@ -167,6 +174,7 @@ struct ContentView: View {
     
     // ...
     func removeCard(at index: Int) {
+        // → only run this function if there are cards to remove
         guard index >= 0 else { return }
         
         cards.remove(at: index)
