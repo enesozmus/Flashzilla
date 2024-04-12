@@ -21,6 +21,7 @@ struct CardView: View {
     var removal: (() -> Void)? = nil
     
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
+    @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
     
     var body: some View {
         ZStack {
@@ -40,15 +41,22 @@ struct CardView: View {
                 .shadow(radius: 10)
             
             VStack {
-                Text(card.prompt)
-                    .font(.largeTitle)
-                    .foregroundStyle(.black)
-                
-                if isShowingAnswer {
-                    Text(card.answer)
-                        .font(.title)
-                        .foregroundStyle(.secondary)
+                if accessibilityVoiceOverEnabled {
+                    Text(isShowingAnswer ? card.answer : card.prompt)
+                        .font(.largeTitle)
+                        .foregroundStyle(.black)
+                } else {
+                    Text(card.prompt)
+                        .font(.largeTitle)
+                        .foregroundStyle(.black)
+                    
+                    if isShowingAnswer {
+                        Text(card.answer)
+                            .font(.title)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                
             }
             .padding(20)
             .multilineTextAlignment(.center)
@@ -58,6 +66,8 @@ struct CardView: View {
         .offset(x: offset.width * 5)
         // → We’re going to make the card fade out as it’s dragged further away.
         .opacity(2 - Double(abs(offset.width / 50)))
+        // → We need to make it clear that our cards are tappable buttons.
+        .accessibilityAddTraits(.isButton)
         // → We need to actually attach a DragGesture to our card so that it updates offset as the user drags the card around.
         .gesture(
             DragGesture()
@@ -77,6 +87,7 @@ struct CardView: View {
         .onTapGesture {
             isShowingAnswer.toggle()
         }
+        .animation(.bouncy, value: offset)
     }
 }
 

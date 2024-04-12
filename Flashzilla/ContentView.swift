@@ -27,10 +27,14 @@ struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @State private var isActive = true
     
+    @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
+    
     var body: some View {
         // → Around that VStack will be another ZStack, so we can place our cards and timer on top of a background.
         ZStack {
-            Image(.background)
+            // → Our UI is a bit of a mess when used with VoiceOver.
+            // → Make small swipes to the right and VoiceOver will move through all the accessibility elements – it reads out the text from all our cards, even the ones that aren’t visible.
+            Image(decorative: "background")
                 .resizable()
                 .ignoresSafeArea()
             // → Around that ZStack will be a VStack. Right now that VStack won’t do much, but later on it will allow us to place a timer above our cards.
@@ -51,6 +55,10 @@ struct ContentView: View {
                             }
                         }
                         .stacked(at: index, in: cards.count)
+                        // → So that only the last card – the one on top – can be dragged around.
+                        .allowsHitTesting(index == cards.count - 1)
+                        // → In this case, every card that’s at an index less than the top card should be hidden from the accessibility system because there’s really nothing useful it can do with the card.
+                        .accessibilityHidden(index < cards.count - 1)
                     }
                 }
                 // → SwiftUI lets us disable interactivity for a view by setting allowsHitTesting() to false, so in our project we can use it to disable swiping on any card when the time runs out by checking the value of timeRemaining.
@@ -65,20 +73,38 @@ struct ContentView: View {
                 }
             }
             
-            if accessibilityDifferentiateWithoutColor {
+            if accessibilityDifferentiateWithoutColor || accessibilityVoiceOverEnabled {    
                 VStack {
                     Spacer()
                     
                     HStack {
-                        Image(systemName: "xmark.circle")
-                            .padding()
-                            .background(.black.opacity(0.7))
-                            .clipShape(.circle)
+                        Button {
+                            withAnimation {
+                                removeCard(at: cards.count - 1)
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle")
+                                .padding()
+                                .background(.black.opacity(0.7))
+                                .clipShape(.circle)
+                        }
+                        .accessibilityLabel("Wrong")
+                        .accessibilityHint("Mark your answer as being incorrect.")
+                        
                         Spacer()
-                        Image(systemName: "checkmark.circle")
-                            .padding()
-                            .background(.black.opacity(0.7))
-                            .clipShape(.circle)
+                        
+                        Button {
+                            withAnimation {
+                                removeCard(at: cards.count - 1)
+                            }
+                        } label: {
+                            Image(systemName: "checkmark.circle")
+                                .padding()
+                                .background(.black.opacity(0.7))
+                                .clipShape(.circle)
+                        }
+                        .accessibilityLabel("Correct")
+                        .accessibilityHint("Mark your answer as being correct.")
                     }
                     .foregroundStyle(.white)
                     .font(.largeTitle)
@@ -106,17 +132,21 @@ struct ContentView: View {
     
     // ...
     func removeCard(at index: Int) {
+        guard index >= 0 else { return }
+        
         cards.remove(at: index)
         
         if cards.isEmpty {
             isActive = false
         }
     }
+    
     func resetCards() {
         cards = Array<Card>(repeating: .example, count: 10)
         timeRemaining = 100
         isActive = true
     }
+    
 }
 
 #Preview {
