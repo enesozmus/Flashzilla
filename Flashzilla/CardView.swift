@@ -23,6 +23,8 @@ struct CardView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
     @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
     
+    @State private var isDragged = false
+    
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 25)
@@ -36,7 +38,8 @@ struct CardView: View {
                     accessibilityDifferentiateWithoutColor
                     ? nil
                     : RoundedRectangle(cornerRadius: 25)
-                        .fill(offset.width > 0 ? .green : .red)
+                        //.fill(offset.width > 0 ? .green : .red)
+                        .fill(isDragged ? (offset.width > 0  ? .green : .red) : .white )
                 )
                 .shadow(radius: 10)
             
@@ -73,8 +76,10 @@ struct CardView: View {
             DragGesture()
                 .onChanged { gesture in
                     offset = gesture.translation
+                    isDragged = true
                 }
                 .onEnded { _ in
+                    isDragged = false
                     if abs(offset.width) > 100 {
                         // remove the card
                         // → That question mark in there means the closure will only be called if it has been set.
